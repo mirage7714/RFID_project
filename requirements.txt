@@ -1,0 +1,5 @@
+Flask==0.12.2
+Flask-Compress==1.4.0
+Flask-Cors==3.0.3
+greenlet==0.4.12
+gunicorn==19.9.0

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+<h2>清除紀錄:</h2>
+<table class="table">
+<tbody>
+{% for result in results %}
+<tr>
+<td>{{ result.sit }}</td>
+<td>{{ result.count }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock content %}

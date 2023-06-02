@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+<h2>統計資料:</h2>
+<table class="table">
+<tbody>
+<thead>
+<tr>
+<td>ISBN</td>
+<td>書名</td>
+<td>取出次數</td>
+</tr>
+</thead>
+{% for result in results %}
+<tr>
+<td>{{ result.ISBN }}</td>
+<td>{{ result.Name }}</td>
+<td>{{ result.count }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock content %}
