@@ -5,22 +5,52 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from flask import Flask, request, render_template, send_from_directory
+from flask import Flask, request, render_template, send_from_directory, redirect, url_for
 import json
 from datetime import datetime
 import sqlite3
 import requests
 from bookParser import parseBookData
 import pandas as pd
+from flask_login import LoginManager, UserMixin, login_user, logout_user
+from flask_sqlalchemy import SQLAlchemy
 
 import json
 
+
 app = Flask(__name__)
 app.static_folder = 'static'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config["SECRET_KEY"] = "abc"
+db = SQLAlchemy()
+
+
+# Create user model
+class Users(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(250), unique=True,
+                         nullable=False)
+    password = db.Column(db.String(250),
+                         nullable=False)
+    permission = db.Column(db.Integer)
+
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 main_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl'
 book_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_list'
 history_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_history'
+
+
+# Creates a user loader callback that returns the user object given an id
+@login_manager.user_loader
+def loader_user(user_id):
+    return Users.query.get(user_id)
 
 def getStatistics():
     results = {}
@@ -62,8 +92,42 @@ def updateHistory(result):
             })
     history_payload['data'] = data
     requests.post(history_url, json = history_payload)
-    
+
+
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        user = Users(username=request.form.get("username"),
+                     password=request.form.get("password"))
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("login"))
+    return render_template("register.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = Users.query.filter_by(
+            username=request.form.get("username")).first()
+        if user.password == request.form.get("password"):
+            login_user(user)
+            return redirect(url_for("index"))
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+
+
 @app.route('/')
+def home():
+    #return render_template('login.html')
+    return redirect(url_for('login'))
+
+@app.route('/index', methods=["GET"])
 def index():
     return render_template('index.html')
 	
