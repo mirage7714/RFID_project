@@ -7,16 +7,16 @@
 <tbody>
 <thead>
 <tr>
-<td>ISBN</td>
-<td>書名</td>
-<td>取出次數</td>
+<td>使用者名稱</td>
+<td>使用者權限</td>
 </tr>
 </thead>
 {% for result in results %}
 <tr>
-<td>{{ result.ISBN }}</td>
-<td>{{ result.Name }}</td>
-<td>{{ result.count }}</td>
+<td>{{ result.username }}</td>
+<td>{{ result.permission }}</td>
+<td><button>刪除使用者</button></td>
+<td><button>編輯使用者</button></td>
 </tr>
 {% endfor %}
 </tbody>

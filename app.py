@@ -41,10 +41,6 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-main_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl'
-book_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_list'
-history_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_history'
-
 
 # Creates a user loader callback that returns the user object given an id
 @login_manager.user_loader
@@ -52,33 +48,16 @@ def loader_user(user_id):
     return Users.query.get(user_id)
 
 
-def getStatistics():
-    results = {}
-    history = {}
-    books = []
-    book_query = json.loads(requests.get(book_url).text)
-    history_query = json.loads(requests.get(history_url).text)
-    for his in history_query:
-        isbn = his['ISBN']
-        if isbn in history.keys():
-            history[isbn] += 1
-        else:
-            history[isbn] = 1
-    for book in book_query:
-        isbn = book['ISBN']
-        if isbn in history.keys():
-            books.append({
-                'ISBN': isbn,
-                'Name': book['Name'],
-                'count': history[isbn]
-            })
-        else:
-            books.append({
-                'ISBN': isbn,
-                'Name': book['Name'],
-                'count': 0
-            })
-    return books
+def get_all_users():
+    user_list = []
+    all_users = Users.query.all()
+    for user in all_users:
+        user_list.append({
+            'username': user.username,
+            'permission': user.permission,
+            'id': user.id
+        })
+    return user_list
 
 
 def updateHistory(result):
@@ -92,7 +71,7 @@ def updateHistory(result):
         'Date': datetime.strftime(datetime.now(), '%Y/%m/%d')
     })
     history_payload['data'] = data
-    requests.post(history_url, json=history_payload)
+    requests.post(  history_url, json=history_payload)
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -186,20 +165,14 @@ def history():
 
 
 @app.route('/statistics')
-def statisticsPage():
-    result = getStatistics()
+def personal_page():
+    result = get_all_users()
     return render_template('statistics.html', results=result)
 
 
 @app.route('/reset')
 def reset():
-    query = json.loads(requests.get(history_url).text)
-    empty = []
-    for row in query:
-        delete_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_history/ISBN/{}'.format(row['ISBN'])
-        print(delete_url)
-        print(requests.delete(delete_url))
-    return render_template('reset.html', result=empty)
+    return render_template('reset.html', result=[])
 
 
 if __name__ == "__main__":
