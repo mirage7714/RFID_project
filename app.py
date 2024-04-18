@@ -17,7 +17,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 import json
 
-
 app = Flask(__name__)
 app.static_folder = 'static'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -52,6 +51,7 @@ history_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_history'
 def loader_user(user_id):
     return Users.query.get(user_id)
 
+
 def getStatistics():
     results = {}
     history = {}
@@ -80,18 +80,19 @@ def getStatistics():
             })
     return books
 
+
 def updateHistory(result):
     index = len(json.loads(requests.get(history_url).text)) + 1
     history_payload = {}
     data = []
     data.append({
-            'No': index,
-            'ISBN': result[0]['ISBN'],
-            'Name': result[0]['Name'],
-            'Date': datetime.strftime(datetime.now(), '%Y/%m/%d')
-            })
+        'No': index,
+        'ISBN': result[0]['ISBN'],
+        'Name': result[0]['Name'],
+        'Date': datetime.strftime(datetime.now(), '%Y/%m/%d')
+    })
     history_payload['data'] = data
-    requests.post(history_url, json = history_payload)
+    requests.post(history_url, json=history_payload)
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -126,13 +127,15 @@ def logout():
 
 @app.route('/')
 def home():
-    #return render_template('login.html')
+    # return render_template('login.html')
     return redirect(url_for('login'))
 
-@app.route('/index', methods=["GET"])
+
+@app.route('/index')
 def index():
     return render_template('index.html')
-	
+
+
 @app.route('/query_book', methods=['POST'])
 def Query():
     book = request.form.get('ISBN')
@@ -141,50 +144,53 @@ def Query():
     for q in query:
         if book == q['ISBN']:
             result.append({
-                    'ISBN':q['ISBN'],
-                    'Name':q['Name'],
-                    'Author': q['Author'],
-                    'Publisher': q['Publisher'],
-                    'Date': q['Date'],
-                    'Status': q['Status']
-                    })
+                'ISBN': q['ISBN'],
+                'Name': q['Name'],
+                'Author': q['Author'],
+                'Publisher': q['Publisher'],
+                'Date': q['Date'],
+                'Status': q['Status']
+            })
     if (len(result) == 0):
         crawlerData = parseBookData(book)
-        if (len(crawlerData) > 0 ):
+        if (len(crawlerData) > 0):
             result.append({
-                    "ISBN": book,
-                    "Name": crawlerData.split(',')[0],
-                    "Author": crawlerData.split(',')[1],
-                    "Publisher": crawlerData.split(',')[2],
-                    "Date": datetime.strftime(datetime.now(), '%Y/%m/%d'),
-                    'Status': 'In'
-                    })
+                "ISBN": book,
+                "Name": crawlerData.split(',')[0],
+                "Author": crawlerData.split(',')[1],
+                "Publisher": crawlerData.split(',')[2],
+                "Date": datetime.strftime(datetime.now(), '%Y/%m/%d'),
+                'Status': 'In'
+            })
             payload = {}
             payload["data"] = result
-            print(requests.post(book_url, json = payload))
+            print(requests.post(book_url, json=payload))
             updateHistory(result)
     else:
         updateHistory(result)
-    return render_template('book.html',book=book,results=result)
-	
+    return render_template('book.html', book=book, results=result)
+
+
 @app.route('/history')
 def history():
     query = json.loads(requests.get(history_url).text)
     result = []
     for row in query:
         result.append({
-        'No': row['No'],
-        'Name': row['Name'],
-        'ISBN': row['ISBN'],
-        'Date': row['Date']
+            'No': row['No'],
+            'Name': row['Name'],
+            'ISBN': row['ISBN'],
+            'Date': row['Date']
         })
-    return render_template('history.html',results=result)
+    return render_template('history.html', results=result)
+
 
 @app.route('/statistics')
 def statisticsPage():
     result = getStatistics()
-    return render_template('statistics.html', results = result)
-    
+    return render_template('statistics.html', results=result)
+
+
 @app.route('/reset')
 def reset():
     query = json.loads(requests.get(history_url).text)
@@ -193,8 +199,8 @@ def reset():
         delete_url = 'https://sheetdb.io/api/v1/24sxv08ychzzl?sheet=book_history/ISBN/{}'.format(row['ISBN'])
         print(delete_url)
         print(requests.delete(delete_url))
-    return render_template('reset.html',result = empty)
-	
-	
+    return render_template('reset.html', result=empty)
+
+
 if __name__ == "__main__":
-    app.run(port=5000, debug = True)
+    app.run(port=5000, debug=True)
