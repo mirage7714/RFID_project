@@ -98,7 +98,9 @@ def updateHistory(result):
 def register():
     if request.method == "POST":
         user = Users(username=request.form.get("username"),
-                     password=request.form.get("password"))
+                     password=request.form.get("password"),
+                     permission=99
+                     )
         db.session.add(user)
         db.session.commit()
         return redirect(url_for("login"))
