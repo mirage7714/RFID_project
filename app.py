@@ -116,50 +116,30 @@ def index():
 
 
 @app.route('/query_book', methods=['POST'])
-def Query():
-    book = request.form.get('ISBN')
-    query = json.loads(requests.get(book_url).text)
-    result = []
-    for q in query:
-        if book == q['ISBN']:
-            result.append({
-                'ISBN': q['ISBN'],
-                'Name': q['Name'],
-                'Author': q['Author'],
-                'Publisher': q['Publisher'],
-                'Date': q['Date'],
-                'Status': q['Status']
-            })
-    if (len(result) == 0):
-        crawlerData = parseBookData(book)
-        if (len(crawlerData) > 0):
-            result.append({
-                "ISBN": book,
-                "Name": crawlerData.split(',')[0],
-                "Author": crawlerData.split(',')[1],
-                "Publisher": crawlerData.split(',')[2],
-                "Date": datetime.strftime(datetime.now(), '%Y/%m/%d'),
-                'Status': 'In'
-            })
-            payload = {}
-            payload["data"] = result
-            print(requests.post(book_url, json=payload))
-            updateHistory(result)
-    else:
-        updateHistory(result)
-    return render_template('book.html', book=book, results=result)
+def query():
+    user = request.form.get('user')
+    url = f'http://localhost:8000/users/{user}'
+    response = json.loads(requests.get(url).text)
+    result = [{
+        'email': response['email'],
+        'password': response['password'],
+        'id': response['id'],
+        'name': response['name']
+    }]
+    return render_template('book.html', user=user, results=result)
 
 
 @app.route('/history')
 def history():
-    query = json.loads(requests.get(history_url).text)
+    url = 'http://localhost:8000/users/'
+    response = json.loads(requests.get(url).text)
     result = []
-    for row in query:
+    for q in response:
         result.append({
-            'No': row['No'],
-            'Name': row['Name'],
-            'ISBN': row['ISBN'],
-            'Date': row['Date']
+            'email': q['email'],
+            'password': q['password'],
+            'id': q['id'],
+            'name': q['name']
         })
     return render_template('history.html', results=result)
 
