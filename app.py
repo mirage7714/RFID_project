@@ -5,7 +5,7 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from flask import Flask, request, render_template, send_from_directory, redirect, url_for
+from flask import Flask, request, render_template, send_from_directory, redirect, url_for, session
 import json
 from datetime import datetime
 import sqlite3
@@ -94,6 +94,7 @@ def login():
             username=request.form.get("username")).first()
         if user.password == request.form.get("password"):
             login_user(user)
+            session['username'] = user
             return redirect(url_for("index"))
     return render_template("login.html")
 

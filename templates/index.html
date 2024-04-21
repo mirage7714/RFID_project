@@ -2,7 +2,7 @@
 
 {% block content %}
 <div>
-<h3>輸入ISBN:</h3>
+<h3>輸入ISBN: {{ session.username }}</h3>
 <form action="/query_book" method="post">
     <label for="user">Name:</label>
     <input type="text" name="user">
