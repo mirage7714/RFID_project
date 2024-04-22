@@ -1,6 +1,5 @@
 venv
 .ipynb_checkpoints
-__pycache__/*
-.idea/*
 /.idea
 /__pycache__
+
