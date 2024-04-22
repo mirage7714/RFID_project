@@ -6,21 +6,17 @@ This is a temporary script file.
 """
 
 from flask import Flask, request, render_template, send_from_directory, redirect, url_for, session
-import json
-from datetime import datetime
-import sqlite3
 import requests
-from bookParser import parseBookData
-import pandas as pd
-from flask_login import LoginManager, UserMixin, login_user, logout_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 
+import os
 import json
 
 app = Flask(__name__)
 app.static_folder = 'static'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-app.config["SECRET_KEY"] = "abc"
+app.config["SECRET_KEY"] = os.urandom(16).hex()
 db = SQLAlchemy()
 
 
@@ -36,7 +32,7 @@ class Users(UserMixin, db.Model):
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
+login_manager.login_view = 'login'
 db.init_app(app)
 with app.app_context():
     db.create_all()
@@ -44,8 +40,11 @@ with app.app_context():
 
 # Creates a user loader callback that returns the user object given an id
 @login_manager.user_loader
-def loader_user(user_id):
-    return Users.query.get(user_id)
+def loader_user(username):
+    user = Users.query.get(username)
+    if not user:
+        return
+    return user
 
 
 def get_all_users():
@@ -60,25 +59,11 @@ def get_all_users():
     return user_list
 
 
-def updateHistory(result):
-    index = len(json.loads(requests.get(history_url).text)) + 1
-    history_payload = {}
-    data = []
-    data.append({
-        'No': index,
-        'ISBN': result[0]['ISBN'],
-        'Name': result[0]['Name'],
-        'Date': datetime.strftime(datetime.now(), '%Y/%m/%d')
-    })
-    history_payload['data'] = data
-    requests.post(  history_url, json=history_payload)
-
-
 @app.route('/register', methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        user = Users(username=request.form.get("username"),
-                     password=request.form.get("password"),
+        user = Users(username=str(request.form.get("username")),
+                     password=str(request.form.get("password")),
                      permission=99
                      )
         db.session.add(user)
@@ -90,12 +75,16 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        username = request.form.get('username')
+        password = request.form.get('password')
+        print(username)
         user = Users.query.filter_by(
-            username=request.form.get("username")).first()
-        if user.password == request.form.get("password"):
-            login_user(user)
-            session['username'] = user
-            return redirect(url_for("index"))
+            username=username).first()
+        if user:
+            if user.password == password:
+                login_user(user)
+                session['username'] = username
+                return redirect(url_for("index"))
     return render_template("login.html")
 
 
@@ -112,6 +101,7 @@ def home():
 
 
 @app.route('/index')
+@login_required
 def index():
     return render_template('index.html')
 
