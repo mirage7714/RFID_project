@@ -15,8 +15,10 @@
 <tr>
 <td>{{ result.username }}</td>
 <td>{{ result.permission }}</td>
-<td><button>刪除使用者</button></td>
 <td><button>編輯使用者</button></td>
+{% if session.username != result.username %}
+<td><button>刪除使用者</button></td>
+{% endif %}
 </tr>
 {% endfor %}
 </tbody>

@@ -107,6 +107,7 @@ def index():
 
 
 @app.route('/query_book', methods=['POST'])
+@login_required
 def query():
     user = request.form.get('user')
     url = f'http://localhost:8000/users/{user}'
