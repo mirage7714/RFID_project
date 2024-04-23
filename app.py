@@ -24,7 +24,7 @@ db = SQLAlchemy()
 
 #Reading data
 data_df = pd.read_csv("static/data/Churn_data.csv")
-churn_df = data_df[(data_df['Churn']=="Yes").notnull()]
+churn_df = data_df[(data_df['Churn'] == "Yes").notnull()]
 
 
 # Create user model
@@ -66,27 +66,27 @@ def get_all_users():
     return user_list
 
 
-def delete_user(username):
-    Users.query.filter_by(username=username).delete()
-    db.session.commit()
-
-
 @app.route('/delete/<username>', methods=['POST'])
 def delete_specific_user(username):
-    delete_user(username)
+    Users.query.filter_by(username=username).delete()
+    db.session.commit()
     return redirect('/statistics')
 
 
 @app.route('/register', methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        user = Users(username=str(request.form.get("username")),
-                     password=str(request.form.get("password")),
-                     permission=99
-                     )
-        db.session.add(user)
-        db.session.commit()
-        return redirect(url_for("login"))
+        username = str(request.form.get('username'))
+        password = str(request.form.get('password'))
+        avail = Users.query.filter_by(username=username).first()
+        if not avail:
+            user = Users(username = username,
+                         password = password,
+                         permission=99
+                         )
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for("login"))
     return render_template("register.html")
 
 
@@ -95,7 +95,6 @@ def login():
     if request.method == "POST":
         username = request.form.get('username')
         password = request.form.get('password')
-        print(username)
         user = Users.query.filter_by(
             username=username).first()
         if user:
@@ -162,9 +161,20 @@ def personal_page():
     return render_template('statistics.html', results=result)
 
 
-@app.route('/reset')
-def reset():
-    return render_template('reset.html', result=[])
+@app.route('/reset/<user_id>', methods=["GET", "POST"])
+def reset(user_id):
+    user = Users.query.filter_by(id=user_id).first()
+    return render_template('reset.html', result=user)
+
+
+@app.route('/update/<user_id>', methods=["POST"])
+def update(user_id):
+    user = Users.query.filter_by(id=user_id).first()
+    user.username = request.form.get('username')
+    user.password = request.form.get('password')
+    user.permission = int(request.form.get('permission'))
+    db.session.commit()
+    return redirect('/statistics')
 
 
 @app.route('/dashboard')

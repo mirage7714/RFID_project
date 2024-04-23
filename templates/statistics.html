@@ -15,7 +15,7 @@
 <tr>
 <td>{{ result.username }}</td>
 <td>{{ result.permission }}</td>
-<td><button>編輯使用者</button></td>
+<td><form action="/reset/{{ result.id }}" method="post"> <button>編輯使用者</button> </form> </td>
 {% if session.username != result.username %}
     <td><form action="/delete/{{ result.username }}" method="post"> <button>刪除使用者</button> </form></td>
 {% endif %}

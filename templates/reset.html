@@ -1,16 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <script>
+        function showPwd() {
+          var x = document.getElementById("password");
+          if (x.type === "password") {
+            x.type = "text";
+          } else {
+            x.type = "password";
+          }
+        }
+    </script>
+
 <div>
-<h2>清除紀錄:</h2>
-<table class="table">
-<tbody>
-{% for result in results %}
-<tr>
-<td>{{ result.sit }}</td>
-<td>{{ result.count }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+<h2>編輯使用者</h2>
+<form action="/update/{{ result.id }}" method="post">
+    <label for="username">Username: </label><br>
+    <input type="text" name="username" value= {{ result.username }} ><br>
+    <label for="password">Password: </label><br>
+    <input type="password" name="password" id="password" value={{ result.password }} >&nbsp<input type="checkbox" onclick="showPwd()">Show password<br>
+    <label for="Permission">Permission: </label><br>
+    <input type="text" name="permission" value={{ result.permission }} ><br>
+    <br><button type="submit">Update</button>
+</form>
 {% endblock content %}
