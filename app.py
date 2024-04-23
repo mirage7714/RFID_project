@@ -60,15 +60,14 @@ def get_all_users():
 
 
 def delete_user(username):
-    delete = Users.query.filter_by(username=username).delete()
-    db.session.add(delete)
+    Users.query.filter_by(username=username).delete()
     db.session.commit()
 
-@app.route('/delete_user', methods=['DELETE'])
-def delete_specific_user():
-    user = request.form.get('username')
-    delete_user(user)
-    return redirect(url_for('statistics'))
+
+@app.route('/delete/<username>', methods=['POST'])
+def delete_specific_user(username):
+    delete_user(username)
+    return redirect('/statistics')
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -96,6 +95,7 @@ def login():
             if user.password == password:
                 login_user(user)
                 session['username'] = username
+                session['permission'] = user.permission
                 return redirect(url_for("index"))
     return render_template("login.html")
 
@@ -149,6 +149,7 @@ def history():
 
 
 @app.route('/statistics')
+@login_required
 def personal_page():
     result = get_all_users()
     return render_template('statistics.html', results=result)

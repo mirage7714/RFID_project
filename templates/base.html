@@ -42,10 +42,12 @@
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/history">使用紀錄</a>
-      </li>    
+      </li>
+      {% if session.permission == 1 %}
       <li class="nav-item">
         <a class="nav-link" href="/statistics">統計資料</a>
       </li>
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link" href="/logout">登出</a>
       </li>
