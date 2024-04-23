@@ -15,7 +15,7 @@ import json
 
 app = Flask(__name__)
 app.static_folder = 'static'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../../db.sqlite'
 app.config["SECRET_KEY"] = os.urandom(16).hex()
 db = SQLAlchemy()
 
@@ -57,6 +57,18 @@ def get_all_users():
             'id': user.id
         })
     return user_list
+
+
+def delete_user(username):
+    delete = Users.query.filter_by(username=username).delete()
+    db.session.add(delete)
+    db.session.commit()
+
+@app.route('/delete_user', methods=['DELETE'])
+def delete_specific_user():
+    user = request.form.get('username')
+    delete_user(user)
+    return redirect(url_for('statistics'))
 
 
 @app.route('/register', methods=["GET", "POST"])
