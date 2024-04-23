@@ -5,11 +5,12 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from flask import Flask, request, render_template, send_from_directory, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 import requests
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
-
+import numpy as np
+import pandas as pd
 import os
 import json
 
@@ -18,6 +19,12 @@ app.static_folder = 'static'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../../db.sqlite'
 app.config["SECRET_KEY"] = os.urandom(16).hex()
 db = SQLAlchemy()
+
+
+
+#Reading data
+data_df = pd.read_csv("static/data/Churn_data.csv")
+churn_df = data_df[(data_df['Churn']=="Yes").notnull()]
 
 
 # Create user model
@@ -158,6 +165,62 @@ def personal_page():
 @app.route('/reset')
 def reset():
     return render_template('reset.html', result=[])
+
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+
+def calculate_percentage(val, total):
+    """Calculates the percentage of a value over a total"""
+    percent = np.round((np.divide(val, total) * 100), 2)
+    return percent
+
+
+def data_creation(data, percent, class_labels, group=None):
+    for index, item in enumerate(percent):
+        data_instance = {}
+        data_instance['category'] = class_labels[index]
+        data_instance['value'] = item
+        data_instance['group'] = group
+        data.append(data_instance)
+
+
+@app.route('/get_piechart_data')
+def get_piechart_data():
+    contract_labels = ['Month-to-month', 'One year', 'Two year']
+    _ = churn_df.groupby('Contract').size().values
+    class_percent = calculate_percentage(_, np.sum(_)) #Getting the value counts and total
+
+    piechart_data= []
+    data_creation(piechart_data, class_percent, contract_labels)
+    return jsonify(piechart_data)
+
+
+@app.route('/get_barchart_data')
+def get_barchart_data():
+    tenure_labels = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79']
+    churn_df['tenure_group'] = pd.cut(churn_df.tenure, range(0, 81, 10), labels=tenure_labels)
+    select_df = churn_df[['tenure_group','Contract']]
+    contract_month = select_df[select_df['Contract']=='Month-to-month']
+    contract_one = select_df[select_df['Contract']=='One year']
+    contract_two =  select_df[select_df['Contract']=='Two year']
+    _ = contract_month.groupby('tenure_group').size().values
+    mon_percent = calculate_percentage(_, np.sum(_))
+    _ = contract_one.groupby('tenure_group').size().values
+    one_percent = calculate_percentage(_, np.sum(_))
+    _ = contract_two.groupby('tenure_group').size().values
+    two_percent = calculate_percentage(_, np.sum(_))
+    _ = select_df.groupby('tenure_group').size().values
+    all_percent = calculate_percentage(_, np.sum(_))
+
+    barchart_data = []
+    data_creation(barchart_data,all_percent, tenure_labels, "All")
+    data_creation(barchart_data,mon_percent, tenure_labels, "Month-to-month")
+    data_creation(barchart_data,one_percent, tenure_labels, "One year")
+    data_creation(barchart_data,two_percent, tenure_labels, "Two year")
+    return jsonify(barchart_data)
 
 
 if __name__ == "__main__":

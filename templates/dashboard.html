@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+        <div class="visualization">
+          <div id="pieChart"></div>
+          <div id="barChart"></div>
+        </div>
+
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        const pieChartDataUrl = "{{ url_for('get_piechart_data') }}";
+        const barChartDataUrl = "{{ url_for('get_barchart_data') }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/pieChart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/barChart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/updateBarChart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</div>
+{% endblock content %}
