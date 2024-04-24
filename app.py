@@ -36,6 +36,15 @@ class Users(UserMixin, db.Model):
     permission = db.Column(db.Integer)
 
 
+class Data(db.Model):
+    time = db.Column(db.String)
+    section_id = db.Column(db.String(250))
+    section_name = db.Column(db.String(250))
+    avg_speed = db.Column(db.Float)
+    avg_occ = db.Column(db.Float)
+    total_vol = db.Column(db.Float)
+
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
