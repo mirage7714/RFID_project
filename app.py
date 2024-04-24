@@ -16,10 +16,9 @@ import json
 
 app = Flask(__name__)
 app.static_folder = 'static'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../../db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../traffic.db'
 app.config["SECRET_KEY"] = os.urandom(16).hex()
 db = SQLAlchemy()
-
 
 
 #Reading data
@@ -162,6 +161,7 @@ def personal_page():
 
 
 @app.route('/reset/<user_id>', methods=["GET", "POST"])
+@login_required
 def reset(user_id):
     user = Users.query.filter_by(id=user_id).first()
     return render_template('reset.html', result=user)
@@ -195,6 +195,13 @@ def data_creation(data, percent, class_labels, group=None):
         data_instance['value'] = item
         data_instance['group'] = group
         data.append(data_instance)
+
+
+@app.route('/get_linechart_data')
+def get_linechart_data():
+    sql = f"select * from data where section_id='ZVCGQ40' and time like '2024/04/19%' "
+    data = pd.read_sql(sql, con=db)
+    print(data)
 
 
 @app.route('/get_piechart_data')

@@ -21,6 +21,6 @@
     <input type="password" name="password" id="password" value={{ result.password }} >&nbsp<input type="checkbox" onclick="showPwd()">Show password<br>
     <label for="Permission">Permission: </label><br>
     <input type="text" name="permission" value={{ result.permission }} ><br>
-    <br><button type="submit">Update</button>
+    <br><button type="submit" onclick="window.history.back();">Cancel</button> &nbsp <button type="submit">Update</button>
 </form>
 {% endblock content %}
