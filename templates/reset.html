@@ -20,7 +20,10 @@
     <label for="password">Password: </label><br>
     <input type="password" name="password" id="password" value={{ result.password }} >&nbsp<input type="checkbox" onclick="showPwd()">Show password<br>
     <label for="Permission">Permission: </label><br>
-    <input type="text" name="permission" value={{ result.permission }} ><br>
+    <select name="permission" id="permission">
+    <option value=1>管理者</option>
+    <option value=99>一般使用者</option>
+    </select><br>
     <br><button type="submit" onclick="window.history.back();">Cancel</button> &nbsp <button type="submit">Update</button>
 </form>
 {% endblock content %}
