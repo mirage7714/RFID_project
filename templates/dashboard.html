@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
+<script src="https://d3js.org/d3.v5.min.js"></script>
 <div>
         <div class="visualization">
           <div id="pieChart"></div>
           <div id="barChart"></div>
         </div>
 
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+
     <script>
         const pieChartDataUrl = "{{ url_for('get_piechart_data') }}";
         const barChartDataUrl = "{{ url_for('get_barchart_data') }}";
@@ -16,5 +17,113 @@
     <script src="{{ url_for('static', filename='js/barChart.js') }}"></script>
     <script src="{{ url_for('static', filename='js/updateBarChart.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</div>
+<div class="container">
+    <p>D3 diagram</p>
+    <script>
+        const lineChartUrlData = "{{ url_for('get_linechart_data') }}"
+        d3.select(".container").append("svg").attr("class", "content");
+        d3.json(lineChartUrlData).then(data => {
+        bind(data);
+        render(data);
+        });
+          // 建立 bind
+  const bind = data => {
+      let selecRect = d3.select("svg").selectAll("rect").data(data);
+      let selecCircle = d3.select("svg").selectAll("circle").data(data);
+      selecRect.enter().append("rect");
+      selecCircle.enter().append("circle");
+      selecRect.enter().append("text").attr('font-size', '12px');
+      selecRect.exit().remove();
+      selecCircle.exit().remove();
+    }
+
+  const render = data => {
+
+  let height = 400;
+  let columnWidth = 50;
+  let columnPadding = 5;
+
+  // 定義人口數、城市名稱之比例尺
+  let amountScale = d3.scaleLinear()
+    .domain([0, d3.max(data, function(d) {
+        return d.avg_speed;
+    })])
+    .range([0, (height * 0.9)]);
+
+  let cityScale = d3.scalePoint()
+    .domain(data.map(d => d.time))
+    .range([0, (columnWidth + columnPadding) * (data.length - 1)]);
+
+
+    // 渲染柱狀圖
+    d3.selectAll("rect")
+      .attr("x", (d, i) => {
+            return (i * (columnWidth + columnPadding))
+        })
+      .attr("y", d => {
+            return height - amountScale(d.amount) - 20
+        })
+      .transition().duration(500)
+      .delay((d, i) => {
+        return i * 100;
+      })
+      .attr("width", columnWidth)
+      .attr("height", d => {
+            return amountScale(d.avg_speed)
+        })
+      .attr("fill", "#dbc5a4")
+
+    // 渲染文字
+    d3.selectAll("text")
+      .attr("x", (d, i) => {
+                return (i * (columnWidth + columnPadding))
+            })
+      .attr("y", d => {
+            return Math.ceil(height - amountScale(d.avg_speed))
+        })
+      .attr("fill", "white")
+      .text(d => {
+            return `${d.avg_speed} km/h`
+        })
+
+    // 渲染圓點
+    d3.selectAll('circle')
+      .attr('cx', (d, i) => {
+            return (i * (columnWidth + columnPadding) + (columnWidth/2))
+        })
+      .attr('cy', d => {
+            return Math.ceil(height - amountScale(d.avg_speed) + 10)
+        })
+      .transition().duration(500)
+      .delay((d, i) => {
+        return i * 100;
+      })
+      .attr('r', 3)
+      .attr('fill', "white")
+
+    // 渲染折線圖
+    let points = '';
+    for(let i=0; i<data.length; i++){
+      points += `${ (columnWidth + columnPadding) * i + (columnWidth/2)} ${Math.ceil(height - amountScale(data[i].avg_speed) + 10)}, `;
+    }
+    d3.select("svg")
+    .append("polyline")
+    .transition().duration(2000)
+    .attr("points", points)
+    .attr("stroke", "#fff")
+    .attr("fill", "none")
+    .attr("stroke-width", 2)
+
+    // 繪製橫軸線
+    let xAxis = d3.axisBottom(cityScale).ticks(data.length)
+    d3.select("svg")
+        .append("g")
+        .classed("axis", true)
+        .attr('transform', `translate(25, 380)`)
+        .call(xAxis);
+
+}
+    </script>
 </div>
 {% endblock content %}

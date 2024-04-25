@@ -37,12 +37,21 @@ class Users(UserMixin, db.Model):
 
 
 class Data(db.Model):
-    time = db.Column(db.String)
-    section_id = db.Column(db.String(250))
+    __tablename__ = 'data'
+    time = db.Column(db.String, primary_key=True)
+    section_id = db.Column(db.String(250), primary_key=True)
     section_name = db.Column(db.String(250))
     avg_speed = db.Column(db.Float)
     avg_occ = db.Column(db.Float)
     total_vol = db.Column(db.Float)
+
+    def __init__(self, time, section_id, section_name, avg_speed, avg_occ, total_vol):
+        self.time = time
+        self.section_id = section_id
+        self.section_name = section_name
+        self.avg_speed = avg_speed
+        self.avg_occ = avg_occ
+        self.total_vol = total_vol
 
 
 login_manager = LoginManager()
@@ -208,9 +217,22 @@ def data_creation(data, percent, class_labels, group=None):
 
 @app.route('/get_linechart_data')
 def get_linechart_data():
-    sql = f"select * from data where section_id='ZVCGQ40' and time like '2024/04/19%' "
-    data = pd.read_sql(sql, con=db)
-    print(data)
+    cri = {'section_id': 'ZVCGQ40'}
+    hour_labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+                   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
+    q = Data.query.filter_by(**cri).filter(Data.time.like('2024/04/20%')).order_by('time')
+    data = []
+    if q:
+        for i in q:
+            data.append({
+                'time': i.time,
+                'section_id': i.section_id,
+                'section_name': i.section_name,
+                'avg_speed': i.avg_speed,
+                'avg_occ': i.avg_occ,
+                'total_vol': i.total_vol
+            })
+    return jsonify(data)
 
 
 @app.route('/get_piechart_data')
@@ -250,4 +272,4 @@ def get_barchart_data():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
