@@ -7,28 +7,24 @@
 
 {% block content %}
 
-<h1>查詢ISBN: {{ book }}</h1>
+<h1>查詢用戶名稱: {{ user }}</h1>
 <table class="table">
 <thead>
 <tr>
-<td>ISBN</td>
-<td>書名</td>
-<td>作者</td>
-<td>出版社</td>
-<td>購買日期</td>
-<td>狀態</td>
+<td>Email</td>
+<td>密碼</td>
+<td>ID</td>
+<td>姓名</td>
 </tr>
 </thead>
 
 <tbody>
 {% for result in results %}
 <tr>
-<td>{{ result.ISBN }}</td>
-<td>{{ result.Name }}</td>
-<td>{{ result.Author }}</td>
-<td>{{ result.Publisher }}</td>
-<td>{{ result.Date }}</td>
-<td>{{ result.Status }}</td>
+<td>{{ result.email }}</td>
+<td>{{ result.password }}</td>
+<td>{{ result.id }}</td>
+<td>{{ result.name }}</td>
 </tr>
 {% endfor %}
 </tbody>

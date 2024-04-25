@@ -6,19 +6,19 @@
 <table class="table">
 <thead>
 <tr>
-<td>No</td>
-<td>ISBN</td>
-<td>書名</td>
-<td>取出時間</td>
+<td>Email</td>
+<td>密碼</td>
+<td>ID</td>
+<td>姓名</td>
 </tr>
 </thead>
 <tbody>
 {% for result in results %}
 <tr>
-<td>{{ result.No }}</td>
-<td>{{ result.ISBN }}</td>
-<td>{{ result.Name }}</td>
-<td>{{ result.Date }}</td>
+<td>{{ result.email }}</td>
+<td>{{ result.password }}</td>
+<td>{{ result.id }}</td>
+<td>{{ result.name }}</td>
 </tr>
 {% endfor %}
 </tbody>

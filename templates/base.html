@@ -31,21 +31,29 @@
 </div>
 
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-  <a class="navbar-brand" href="/">功能列</a>
+  <a class="navbar-brand" href="/index">功能列</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="collapsibleNavbar">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link" href="/">首頁</a>
+        <a class="nav-link" href="/index">首頁</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/history">使用紀錄</a>
-      </li>    
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/dashboard">儀錶板</a>
+      </li>
+      {% if session.permission == 1 %}
       <li class="nav-item">
         <a class="nav-link" href="/statistics">統計資料</a>
-      </li>	  
+      </li>
+      {% endif %}
+      <li class="nav-item">
+        <a class="nav-link" href="/logout">登出</a>
+      </li>
     </ul>
   </div>  
 </nav>
