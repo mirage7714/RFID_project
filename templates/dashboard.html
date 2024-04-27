@@ -3,12 +3,33 @@
 {% block content %}
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <div>
+    <select id="batchSelect"></select> <br>
         <div class="visualization">
           <div id="pieChart"></div>
           <div id="barChart"></div>
         </div>
 
+    <script>
+    const data_url = "{{ url_for('get_all_section_name') }}";
+    const batchTrack = document.getElementById("batchSelect");
+    const getPost = async () => {
+      const data = await fetch(data_url);
+      console.log(data);
+      return data.json();
+    };
 
+    const displayOption = async () => {
+      const options = await getPost();
+      for (option of options) {
+        const newOption = document.createElement("option");
+        newOption.value = option.section_id;
+        newOption.text = option.section_name;
+        batchTrack.appendChild(newOption);
+      }
+    };
+
+    displayOption();
+    </script>
     <script>
         const pieChartDataUrl = "{{ url_for('get_piechart_data') }}";
         const barChartDataUrl = "{{ url_for('get_barchart_data') }}";

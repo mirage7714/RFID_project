@@ -215,6 +215,19 @@ def data_creation(data, percent, class_labels, group=None):
         data.append(data_instance)
 
 
+@app.route('/get_all_section_name', methods=['get'])
+def get_all_section_name():
+    query = db.session.query(Data.section_name, Data.section_id)\
+        .distinct(Data.section_name, Data.section_id)\
+        .order_by(Data.section_name)
+    data = []
+    if query:
+        for i in query:
+            data.append({'section_name': i.section_name,
+                         'section_id': i.section_id})
+    return jsonify(data)
+
+
 @app.route('/get_linechart_data')
 def get_linechart_data():
     cri = {'section_id': 'ZVCGQ40'}
