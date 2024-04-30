@@ -7,12 +7,16 @@ This is a temporary script file.
 
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 import requests
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 import pandas as pd
 import os
 import json
+import base64
+from io import BytesIO
+
+from matplotlib.figure import Figure
 
 app = Flask(__name__)
 app.static_folder = 'static'
@@ -121,6 +125,19 @@ def login():
                 session['permission'] = user.permission
                 return redirect(url_for("index"))
     return render_template("login.html")
+
+
+@app.route('/test_image')
+def get_image():
+    fig = Figure()
+    ax = fig.subplots()
+    ax.plot([1, 2])
+    # Save it to a temporary buffer.
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    # Embed the result in the html output.
+    data = base64.b64encode(buf.getbuffer()).decode("ascii")
+    return f"<img src='data:image/png;base64,{data}'/>"
 
 
 @app.route("/logout")
