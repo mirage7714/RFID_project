@@ -143,11 +143,7 @@ def get_image():
     return render_template('graph.html', plot_url=data)
 
 
-@app.route('/bokeh_graph')
-def get_bokeh_page():
-    return render_template('bokeh_graph.html')
-
-@app.route("/bokeh_js")
+@app.route('/bokeh')
 def get_bokeh_image():
     plot = figure(height=300, width=300)
     # define some data
@@ -158,13 +154,11 @@ def get_bokeh_image():
     return json.dumps(json_item(p, "myplot"))
 
 
-@app.route('/bokeh')
+@app.route('/bokeh_graph')
 def hello():
-    # Creating Plot Figure
-    p = figure(height=350, sizing_mode="stretch_width")
-
-    # Defining Plot to be a Scatter Plot
-    p.circle(
+    # First Chart - Scatter Plot
+    p1 = figure(height=350, sizing_mode="stretch_width")
+    p1.circle(
         [i for i in range(10)],
         [random.randint(1, 50) for j in range(10)],
         size=20,
@@ -172,23 +166,38 @@ def hello():
         alpha=0.5
     )
 
-    # Get Chart Components
-    script, div = components(p)
+    # Second Chart - Line Plot
+    language = ['Python', 'JavaScript', 'C++', 'C#', 'Java', 'Golang']
+    popularity = [85, 91, 63, 58, 80, 77]
 
-    # Return the components to the HTML template
-    return f'''
-    <html lang="en">
-        <head>
-            <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.4.1.min.js"></script>
-            <title>Bokeh Charts</title>
-        </head>
-        <body>
-            <h1>Add Graphs to Flask apps using Python library - Bokeh</h1>
-            {div}
-            {script}
-        </body>
-    </html>
-    '''
+    p2 = figure(
+        x_range=language,
+        height=350,
+        title="Popularity",
+    )
+    p2.vbar(x=language, top=popularity, width=0.5)
+    p2.xgrid.grid_line_color = None
+    p2.y_range.start = 0
+
+    # Third Chart - Line Plot
+    p3 = figure(height=350, sizing_mode="stretch_width")
+    p3.line(
+        [i for i in range(10)],
+        [random.randint(1, 50) for j in range(10)],
+        line_width=2,
+        color="olive",
+        alpha=0.5
+    )
+
+    script1, div1 = components(p1)
+    script2, div2 = components(p2)
+    script3, div3 = components(p3)
+    # Return all the charts to the HTML template
+    return render_template(
+        template_name_or_list='bokeh_graph.html',
+        script=[script1, script2, script3],
+        div=[div1, div2, div3],
+    )
 
 
 @app.route("/logout")
