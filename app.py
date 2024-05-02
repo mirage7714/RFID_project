@@ -12,11 +12,13 @@ from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 import pandas as pd
 import os
-import json
 import base64
 from io import BytesIO
-
+from bokeh.embed import components, json_item
+from bokeh.plotting import figure
 from matplotlib.figure import Figure
+import json
+import random
 
 app = Flask(__name__)
 app.static_folder = 'static'
@@ -127,8 +129,9 @@ def login():
     return render_template("login.html")
 
 
-@app.route('/test_image')
+@app.route("/graph")
 def get_image():
+    # Generate the figure **without using pyplot**.
     fig = Figure()
     ax = fig.subplots()
     ax.plot([1, 2])
@@ -137,7 +140,55 @@ def get_image():
     fig.savefig(buf, format="png")
     # Embed the result in the html output.
     data = base64.b64encode(buf.getbuffer()).decode("ascii")
-    return f"<img src='data:image/png;base64,{data}'/>"
+    return render_template('graph.html', plot_url=data)
+
+
+@app.route('/bokeh_graph')
+def get_bokeh_page():
+    return render_template('bokeh_graph.html')
+
+@app.route("/bokeh_js")
+def get_bokeh_image():
+    plot = figure(height=300, width=300)
+    # define some data
+    x = [1, 2, 3, 4, 5]
+    y = [6, 7, 2, 1, 5]
+    # use your plot's line() function to create a line plot with this data
+    p = plot.line(x, y)
+    return json.dumps(json_item(p, "myplot"))
+
+
+@app.route('/bokeh')
+def hello():
+    # Creating Plot Figure
+    p = figure(height=350, sizing_mode="stretch_width")
+
+    # Defining Plot to be a Scatter Plot
+    p.circle(
+        [i for i in range(10)],
+        [random.randint(1, 50) for j in range(10)],
+        size=20,
+        color="navy",
+        alpha=0.5
+    )
+
+    # Get Chart Components
+    script, div = components(p)
+
+    # Return the components to the HTML template
+    return f'''
+    <html lang="en">
+        <head>
+            <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.4.1.min.js"></script>
+            <title>Bokeh Charts</title>
+        </head>
+        <body>
+            <h1>Add Graphs to Flask apps using Python library - Bokeh</h1>
+            {div}
+            {script}
+        </body>
+    </html>
+    '''
 
 
 @app.route("/logout")

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %} 
+查詢結果
+{% endblock title %}
+
+
+{% block content %}
+<img src="data:image/png;base64, {{ plot_url }}">
+
+
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.4.1.min.js"></script>
+    <h1>Add Graphs to Flask apps using Python library - Bokeh</h1><br>
+    <div id="myplot"></div>
+<script>
+    const url = {{ url_for('bokeh_js') }}
+const response = await fetch(url)
+const item = await response.json()
+console.log(item)
+Bokeh.embed.embed_item(item)
+</script>
+{% endblock content %}
