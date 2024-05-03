@@ -180,15 +180,25 @@ def hello():
     p2.y_range.start = 0
 
     # Third Chart - Line Plot
-    p3 = figure(height=350, sizing_mode="stretch_width")
+    p3 = figure(height=350, sizing_mode="stretch_width", title="Average Speed")
+    cri = {'section_id': 'ZVCGQ40'}
+    data = []
+    q = Data.query.filter_by(**cri).filter(Data.time.like('2024/04/20%')).order_by('time')
+    for i in q:
+        data.append(i.avg_speed)
     p3.line(
-        [i for i in range(10)],
-        [random.randint(1, 50) for j in range(10)],
+        [i for i in range(24)],
+        data,
         line_width=2,
         color="olive",
-        alpha=0.5
+        alpha=0.5,
     )
-
+    '''
+    cri = {'section_id': 'ZVCGQ40'}
+    hour_labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+                   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
+    q = Data.query.filter_by(**cri).filter(Data.time.like('2024/04/20%')).order_by('time')
+    '''
     script1, div1 = components(p1)
     script2, div2 = components(p2)
     script3, div3 = components(p3)
