@@ -6,7 +6,17 @@
 
 {% block content %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.4.1/bokeh.min.js"></script>
+
         <h1>Responsive Chart with Bokeh, Flask and Python</h1>
+        <form action="/query_traffic_data" method="get">
+            <label for="section">路段: </label>&nbsp;
+            <select name='section' id="selectSection"></select></br>
+            <label for="date">日期: </label>&nbsp;
+            <select name='date' id="selectDate"></select></br>
+            <input type="submit" value="submit">
+        </form>
+
+
         <div class="row">
             <div class="col-md-6">
                 <h4 class="text-center">Scatter Plot</h4>
@@ -24,4 +34,44 @@
                 {{ script[2] | safe }}
             </div>
         </div>
+    <script>
+    const section_url = "{{ url_for('get_all_section_name') }}";
+    const date_url = "{{ url_for('get_all_date') }}";
+    const batchSection = document.getElementById("selectSection");
+    const batchDate = document.getElementById("selectDate");
+    const getSection = async () => {
+      const data = await fetch(section_url);
+      console.log(data);
+      return data.json();
+    };
+
+    const getDate = async () => {
+      const data = await fetch(date_url);
+      console.log(data);
+      return data.json();
+    };
+
+    const displaySection = async () => {
+      const options = await getSection();
+      for (option of options) {
+        const newOption = document.createElement("option");
+        newOption.value = option.section_id;
+        newOption.text = option.section_name;
+        batchSection.appendChild(newOption);
+      }
+    };
+
+    const displayDate = async () => {
+      const options = await getDate();
+      for (option of options) {
+        const newOption = document.createElement("option");
+        newOption.value = option.date;
+        newOption.text = option.date;
+        batchDate.appendChild(newOption);
+      }
+    };
+
+    displaySection();
+    displayDate();
+    </script>
 {% endblock content %}

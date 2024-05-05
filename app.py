@@ -9,12 +9,12 @@ from flask import Flask, request, render_template, redirect, url_for, session, j
 import requests
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
-import numpy as np
-import pandas as pd
 import os
+import pandas as pd
+import numpy as np
 import base64
 from io import BytesIO
-from bokeh.embed import components, json_item
+from bokeh.embed import components
 from bokeh.plotting import figure
 from matplotlib.figure import Figure
 import json
@@ -143,17 +143,6 @@ def get_image():
     return render_template('graph.html', plot_url=data)
 
 
-@app.route('/bokeh')
-def get_bokeh_image():
-    plot = figure(height=300, width=300)
-    # define some data
-    x = [1, 2, 3, 4, 5]
-    y = [6, 7, 2, 1, 5]
-    # use your plot's line() function to create a line plot with this data
-    p = plot.line(x, y)
-    return json.dumps(json_item(p, "myplot"))
-
-
 @app.route('/bokeh_graph')
 def hello():
     # First Chart - Scatter Plot
@@ -180,25 +169,22 @@ def hello():
     p2.y_range.start = 0
 
     # Third Chart - Line Plot
-    p3 = figure(height=350, sizing_mode="stretch_width", title="Average Speed")
+    p3 = figure(height=350, sizing_mode="stretch_width", title="Average Speed", x_axis_type='datetime')
     cri = {'section_id': 'ZVCGQ40'}
     data = []
+    t = []
     q = Data.query.filter_by(**cri).filter(Data.time.like('2024/04/20%')).order_by('time')
     for i in q:
         data.append(i.avg_speed)
+        t.append(i.time)
     p3.line(
-        [i for i in range(24)],
+        [pd.to_datetime(i) for i in t],
         data,
         line_width=2,
         color="olive",
         alpha=0.5,
     )
-    '''
-    cri = {'section_id': 'ZVCGQ40'}
-    hour_labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
-                   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
-    q = Data.query.filter_by(**cri).filter(Data.time.like('2024/04/20%')).order_by('time')
-    '''
+
     script1, div1 = components(p1)
     script2, div2 = components(p2)
     script3, div3 = components(p3)
@@ -304,35 +290,64 @@ def data_creation(data, percent, class_labels, group=None):
 
 @app.route('/get_all_section_name', methods=['get'])
 def get_all_section_name():
-    query = db.session.query(Data.section_name, Data.section_id)\
-        .distinct(Data.section_name, Data.section_id)\
+    q = db.session.query(Data.section_name, Data.section_id) \
+        .distinct(Data.section_name, Data.section_id) \
         .order_by(Data.section_name)
-    data = []
-    if query:
-        for i in query:
-            data.append({'section_name': i.section_name,
-                         'section_id': i.section_id})
-    return jsonify(data)
-
-
-@app.route('/get_linechart_data')
-def get_linechart_data():
-    cri = {'section_id': 'ZVCGQ40'}
-    hour_labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
-                   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']
-    q = Data.query.filter_by(**cri).filter(Data.time.like('2024/04/20%')).order_by('time')
     data = []
     if q:
         for i in q:
-            data.append({
-                'time': i.time,
-                'section_id': i.section_id,
-                'section_name': i.section_name,
-                'avg_speed': i.avg_speed,
-                'avg_occ': i.avg_occ,
-                'total_vol': i.total_vol
-            })
+            data.append({'section_name': i.section_name,
+                        'section_id': i.section_id})
     return jsonify(data)
+
+
+@app.route('/get_all_date', methods=['get'])
+def get_all_date():
+    q = db.session.query(Data.time).distinct(Data.time).order_by(Data.time)
+    data = []
+    temp = set()
+    if q:
+        for i in q:
+            day = i.time[:10]
+            if day not in temp:
+                temp.add(day)
+                data.append({'date': day})
+    return jsonify(data)
+
+
+@app.route('/query_traffic_data', methods=['get'])
+def get_linechart_data():
+    s = request.form.get('section')
+    d = request.form.get('date')
+    return render_template('bokeh.html', s=s, d=d)
+
+
+@app.route('/bokeh', methods=['get'])
+def get_line_chart(s, t):
+    p3 = figure(height=350, sizing_mode="stretch_width", title="Average Speed")
+    speed = []
+    t = []
+    cri = {'section_id': s}
+    q = Data.query.filter_by(**cri).filter(Data.time.like(f'{t}%')).order_by('time')
+    for i in q:
+        speed.append(i.avg_speed)
+    print(t)
+    print(speed)
+    p3.line(
+        [i for i in range(len(speed))],
+        speed,
+        line_width=2,
+        color="olive",
+        alpha=0.5,
+    )
+    script3, div3 = components(p3)
+    # Return all the charts to the HTML template
+    return render_template(
+        template_name_or_list='bokeh.html',
+        script=script3,
+        div=div3,
+    )
+
 
 
 @app.route('/get_piechart_data')

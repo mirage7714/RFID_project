@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set active_page = "bokeh_graph" %}
+{% block title %} 
+查詢結果
+{% endblock title %}
+
+{% block content %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/3.4.1/bokeh.min.js"></script>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4 class="text-center">Line Chart</h4>
+                {{ div | safe }}
+                {{ script | safe }}
+            </div>
+        </div>
+{% endblock content %}
