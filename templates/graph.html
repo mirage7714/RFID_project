@@ -6,17 +6,32 @@
 
 
 {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-sm-4"></div>
+      <p>Lorem ipsum dolor sit ame.</p>
+      <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+          <a class="nav-link active" href="#">Active</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Link</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Link</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" href="#">Disabled</a>
+        </li>
+      </ul>
+      <hr class="d-sm-none">
+    </div>
+</div>
+
 <img src="data:image/png;base64, {{ plot_url }}">
 
 
     <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.4.1.min.js"></script>
     <h1>Add Graphs to Flask apps using Python library - Bokeh</h1><br>
     <div id="myplot"></div>
-<script>
-    const url = {{ url_for('bokeh_js') }}
-const response = await fetch(url)
-const item = await response.json()
-console.log(item)
-Bokeh.embed.embed_item(item)
-</script>
 {% endblock content %}
